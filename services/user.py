@@ -1,9 +1,11 @@
 from django.db import transaction
 from db.models import User
+from django.contrib.auth import get_user_model
 
 
 def get_user(user_id: int) -> User:
-    return User.objects.get(pk=user_id)
+    user_model = get_user_model()
+    return user_model.objects.get(pk=user_id)
 
 
 @transaction.atomic
@@ -14,13 +16,12 @@ def create_user(
         first_name: str = None,
         last_name: str = None
 ) -> User:
-    user = User.objects.create_user(
-        username=username,
-        password=password,
-        email=email or "",
-        first_name=first_name or "",
-        last_name=last_name or ""
-    )
+    user = User.objects.create_user(username=username,
+                                    password=password,
+                                    email=email,
+                                    first_name=first_name,
+                                    last_name=last_name
+                                    )
     return user
 
 
@@ -34,15 +35,9 @@ def update_user(
         last_name: str = None
 ) -> User:
     user = get_user(user_id)
-    user.username = username if username is not None else (user.username or "")
-    user.email = email if email is not None else (user.email or "")
-    user.first_name = first_name if first_name is not None else (
-        user.first_name or "")
-    user.last_name = last_name if last_name is not None else (
-        user.last_name or "")
-
-    if password is not None:
-        user.set_password(password)
-
+    user.username = username if username is not None else user.username
+    user.email = email if email is not None else user.email
+    user.first_name = first_name if first_name is not None else user.first_name
+    user.last_name = last_name if last_name is not None else user.last_name
     user.save()
     return user
